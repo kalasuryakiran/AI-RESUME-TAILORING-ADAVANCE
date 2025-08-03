@@ -35,12 +35,7 @@ const optimizeContentPrompt = ai.definePrompt({
   Job Description: {{{jobDescription}}}
   Identified Gaps: {{{identifiedGaps}}}
   Structured Resume Analysis:
-  - Name: {{resumeAnalysis.name}}
-  - Contact: {{JSON.stringify resumeAnalysis.contact}}
-  - Summary: {{resumeAnalysis.summary}}
-  - Skills: {{#each resumeAnalysis.skills}}{{this}}, {{/each}}
-  - Experience: {{#each resumeAnalysis.experiences}}{{this.title}} at {{this.company}} - {{this.description}}{{/each}}
-  - Education: {{#each resumeAnalysis.education}}{{this.degree}} from {{this.school}}{{/each}}
+  {{{JSON.stringify resumeAnalysis}}}
 
   Your final output will be a perfectly formatted resume template in both string and structured format. Ensure the optimized content is well-structured, professional, and easy to read for both humans and ATS systems.
   The ATS score should be 100, reflecting a perfect match with the job description.
