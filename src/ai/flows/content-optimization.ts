@@ -32,21 +32,21 @@ const optimizeContentPrompt = ai.definePrompt({
   name: 'optimizeContentPrompt',
   input: {schema: OptimizeContentInputSchema},
   output: {schema: OptimizeContentOutputSchema},
-  prompt: `You are an expert resume writer specializing in ATS optimization.
+  prompt: `You are an expert resume writer specializing in ATS optimization. Your goal is to achieve a perfect 100 ATS score.
   {{#if isFresher}}
   You are creating a resume for a fresher. Focus on highlighting potential, transferable skills, academic projects, and internships. De-emphasize the lack of professional experience. The resume should be tailored for an entry-level position.
   {{/if}}
 
-  Based on the provided resume content, job description, and identified gaps, rewrite and optimize the resume content to achieve a higher ATS score.
-  Rephrase sentences and add industry-relevant keywords to improve the resume's matching to the job description.
+  Based on the provided resume content, job description, and identified gaps, rewrite and optimize the resume content to achieve a 100% ATS score.
+  You must change the content of the resume to fully align with the job description.
+  Rephrase sentences and add all relevant keywords to maximize the resume's matching to the job description.
 
   Resume Content: {{{resumeContent}}}
   Job Description: {{{jobDescription}}}
   Identified Gaps: {{{identifiedGaps}}}
 
   Ensure the optimized content is well-structured and easy to read for both humans and ATS systems.
-  The ATS score should be an estimated score based on how well the optimized content matches the job description and incorporates the identified gaps.
-  The ATS score should be a number between 0 and 100.
+  The ATS score should be 100, reflecting a perfect match with the job description.
   `,
 });
 
