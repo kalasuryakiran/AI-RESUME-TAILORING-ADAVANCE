@@ -36,6 +36,7 @@ import {
 
 type GapAnalysisResult = AnalyzeResumeAndJobDescriptionOutput | null;
 type OptimizedResult = OptimizeContentOutput | null;
+type ResumeAnalysisResult = ResumeAnalysisOutput | null;
 
 const ScoreDonut = ({ score }: { score: number }) => {
   const radius = 54;
@@ -80,6 +81,7 @@ export default function ResumeOptimizerPage() {
   const [jobDesc, setJobDesc] = useState('');
   const [isFresher, setIsFresher] = useState(false);
   const [gapAnalysisResult, setGapAnalysisResult] = useState<GapAnalysisResult>(null);
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysisResult>(null);
   const [optimizedResult, setOptimizedResult] = useState<OptimizedResult>(null);
   const [isAnalyzing, startAnalysisTransition] = useTransition();
   const [isOptimizing, startOptimizationTransition] = useTransition();
@@ -102,8 +104,9 @@ export default function ResumeOptimizerPage() {
     setOptimizedResult(null);
     startAnalysisTransition(async () => {
       try {
-        const result = await performGapAnalysis(resume, jobDesc, isFresher);
-        setGapAnalysisResult(result);
+        const { gapAnalysis, resumeAnalysis } = await performGapAnalysis(resume, jobDesc, isFresher);
+        setGapAnalysisResult(gapAnalysis);
+        setResumeAnalysis(resumeAnalysis);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -111,16 +114,17 @@ export default function ResumeOptimizerPage() {
           description: error instanceof Error ? error.message : 'An unknown error occurred.',
         });
         setGapAnalysisResult(null);
+        setResumeAnalysis(null);
       }
     });
   };
 
   const handleOptimize = () => {
-    if (!gapAnalysisResult) return;
+    if (!gapAnalysisResult || !resumeAnalysis) return;
     const gapsString = `Missing Keywords: ${gapAnalysisResult.missingKeywords.join(', ')}\nMissing Skills: ${gapAnalysisResult.missingSkills.join(', ')}\nMissing Action Verbs: ${gapAnalysisResult.missingActionVerbs.join(', ')}`;
     startOptimizationTransition(async () => {
       try {
-        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher);
+        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher, resumeAnalysis);
         setOptimizedResult(result);
       } catch (error) {
         toast({

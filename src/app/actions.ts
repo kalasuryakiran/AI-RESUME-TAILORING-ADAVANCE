@@ -9,14 +9,14 @@ export async function performGapAnalysis(
   resumeText: string,
   jobDescriptionText: string,
   isFresher: boolean
-): Promise<AnalyzeResumeAndJobDescriptionOutput> {
+): Promise<{ gapAnalysis: AnalyzeResumeAndJobDescriptionOutput; resumeAnalysis: ResumeAnalysisOutput }> {
   if (!resumeText || !jobDescriptionText) {
     throw new Error('Resume and Job Description cannot be empty.');
   }
   try {
     const resumeAnalysis = await analyzeResume({ resumeText });
-    const result = await analyzeResumeAndJobDescription({ resumeAnalysis, jobDescriptionText, isFresher });
-    return result;
+    const gapAnalysis = await analyzeResumeAndJobDescription({ resumeAnalysis, jobDescriptionText, isFresher });
+    return { gapAnalysis, resumeAnalysis };
   } catch(e) {
     console.error(e);
     throw new Error("Failed to analyze resume. The AI model might be unavailable.");
@@ -27,13 +27,13 @@ export async function performContentOptimization(
   resumeContent: string,
   jobDescription: string,
   identifiedGaps: string,
-  isFresher: boolean
+  isFresher: boolean,
+  resumeAnalysis: ResumeAnalysisOutput
 ): Promise<OptimizeContentOutput> {
   if (!resumeContent || !jobDescription) {
     throw new Error('Missing required data for optimization.');
   }
    try {
-    const resumeAnalysis = await analyzeResume({ resumeText: resumeContent });
     const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps, isFresher, resumeAnalysis });
     return result;
   } catch(e) {
