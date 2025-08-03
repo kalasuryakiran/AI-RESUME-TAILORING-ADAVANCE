@@ -85,6 +85,7 @@ export default function ResumeOptimizerPage() {
   const [isOptimizing, startOptimizationTransition] = useTransition();
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('modern');
+  const [atsScore, setAtsScore] = useState(100);
   const { toast } = useToast();
 
   const templateRef = useRef<HTMLDivElement>(null);
@@ -338,7 +339,7 @@ export default function ResumeOptimizerPage() {
                     </TabsList>
                     <TabsContent value="optimized" className="mt-4">
                       <div className="flex flex-col items-center gap-6 text-center">
-                          <ScoreDonut score={optimizedResult.atsScore} />
+                          <ScoreDonut score={atsScore} />
                           <div className="flex flex-wrap justify-center gap-4">
                              <Button onClick={() => handleCopy(optimizedResult.optimizedContent)}>
                               <ClipboardCopy className="mr-2 h-4 w-4" />

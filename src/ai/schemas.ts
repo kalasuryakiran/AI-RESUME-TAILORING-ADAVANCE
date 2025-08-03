@@ -59,6 +59,5 @@ export type OptimizeContentInput = z.infer<typeof OptimizeContentInputSchema>;
 export const OptimizeContentOutputSchema = z.object({
   optimizedContent: z.string().describe('The optimized resume content as a single string.'),
   optimizedContentStructured: ResumeAnalysisOutputSchema.describe('The optimized resume content in a structured format.'),
-  atsScore: z.number().describe('The estimated ATS score for the optimized resume.'),
 });
 export type OptimizeContentOutput = z.infer<typeof OptimizeContentOutputSchema>;
