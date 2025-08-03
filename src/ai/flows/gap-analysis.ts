@@ -4,28 +4,10 @@
  * @fileOverview This file contains the Genkit flow for analyzing a resume and job description to identify missing keywords, skills, and action verbs.
  *
  * - analyzeResumeAndJobDescription - A function that takes resume and job description as input and returns the analysis.
- * - AnalyzeResumeAndJobDescriptionInput - The input type for the analyzeResumeAndJobDescription function.
- * - AnalyzeResumeAndJobDescriptionOutput - The return type for the analyzeResumeAndJobDescription function.
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
-
-const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
-  resumeText: z.string().describe('The text content of the resume.'),
-  jobDescriptionText: z.string().describe('The text content of the job description.'),
-  isFresher: z.boolean().describe('Whether the resume is for a fresher.'),
-});
-
-export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
-
-const AnalyzeResumeAndJobDescriptionOutputSchema = z.object({
-  missingKeywords: z.array(z.string()).describe('Keywords present in the job description but missing from the resume.'),
-  missingSkills: z.array(z.string()).describe('Skills mentioned in the job description but not found in the resume.'),
-  missingActionVerbs: z.array(z.string()).describe('Action verbs used in the job description but absent in the resume.'),
-});
-
-export type AnalyzeResumeAndJobDescriptionOutput = z.infer<typeof AnalyzeResumeAndJobDescriptionOutputSchema>;
+import {AnalyzeResumeAndJobDescriptionInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionInput, type AnalyzeResumeAndJobDescriptionOutput} from '@/ai/schemas';
 
 export async function analyzeResumeAndJobDescription(
   input: AnalyzeResumeAndJobDescriptionInput
@@ -46,14 +28,16 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
 
   Specifically:
   1. Extract key skills, keywords, and action verbs from the job description.
-  2. Check if these keywords, skills, and action verbs are present in the resume.
+  2. Check if these keywords, skills, and action verbs are present in the structured resume data provided.
   3. List the keywords, skills, and action verbs that are missing from the resume but are present in the job description.
 
   Job Description:
-  {{jobDescriptionText}}
+  {{{jobDescriptionText}}}
 
-  Resume:
-  {{resumeText}}
+  Structured Resume Data:
+  Skills: {{#each resumeAnalysis.skills}}{{this}}, {{/each}}
+  Experience: {{#each resumeAnalysis.experiences}}{{this.title}} at {{this.company}} - {{this.description}}{{/each}}
+  Education: {{#each resumeAnalysis.education}}{{this.degree}} from {{this.school}}{{/each}}
 
   Present the output as a JSON object with the following keys:
   - missingKeywords: An array of keywords missing from the resume.

@@ -1,8 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import type { AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/gap-analysis';
-import type { OptimizeContentOutput } from '@/ai/flows/content-optimization';
+import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput } from '@/ai/schemas';
 import { performGapAnalysis, performContentOptimization } from './actions';
 
 import { Button } from '@/components/ui/button';

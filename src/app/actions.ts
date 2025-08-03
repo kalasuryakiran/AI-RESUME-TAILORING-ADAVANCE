@@ -1,7 +1,9 @@
 'use server';
 
-import { analyzeResumeAndJobDescription, AnalyzeResumeAndJobDescriptionOutput } from '@/ai/flows/gap-analysis';
-import { optimizeContent, OptimizeContentOutput } from '@/ai/flows/content-optimization';
+import { analyzeResumeAndJobDescription } from '@/ai/flows/gap-analysis';
+import { optimizeContent } from '@/ai/flows/content-optimization';
+import { analyzeResume } from '@/ai/flows/resume-analysis';
+import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput } from '@/ai/schemas';
 
 export async function performGapAnalysis(
   resumeText: string,
@@ -12,7 +14,8 @@ export async function performGapAnalysis(
     throw new Error('Resume and Job Description cannot be empty.');
   }
   try {
-    const result = await analyzeResumeAndJobDescription({ resumeText, jobDescriptionText, isFresher });
+    const resumeAnalysis = await analyzeResume({ resumeText });
+    const result = await analyzeResumeAndJobDescription({ resumeAnalysis, jobDescriptionText, isFresher });
     return result;
   } catch(e) {
     console.error(e);
@@ -30,7 +33,8 @@ export async function performContentOptimization(
     throw new Error('Missing required data for optimization.');
   }
    try {
-    const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps, isFresher });
+    const resumeAnalysis = await analyzeResume({ resumeText: resumeContent });
+    const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps, isFresher, resumeAnalysis });
     return result;
   } catch(e) {
     console.error(e);
