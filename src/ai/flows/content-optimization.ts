@@ -23,7 +23,7 @@ const optimizeContentPrompt = ai.definePrompt({
   You are creating a resume for a fresher. Focus on highlighting potential, transferable skills, academic projects, and internships. De-emphasize the lack of professional experience. The resume should be tailored for an entry-level position.
   {{/if}}
 
-  Based on the provided resume content, job description, structured resume analysis, and identified gaps, rewrite and optimize the resume content to achieve a 100% ATS score.
+  Based on the provided resume content, job description, and identified gaps, rewrite and optimize the resume content to achieve a 100% ATS score.
   You MUST aggressively change the content of the resume to fully align with the job description.
   Rephrase sentences, expand on projects, and add all relevant keywords to maximize the resume's matching to the job description. Use the structured analysis to ensure you don't lose key information from the original resume.
 
