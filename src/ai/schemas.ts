@@ -52,7 +52,6 @@ export const OptimizeContentInputSchema = z.object({
   jobDescription: z.string().describe('The job description to match the resume to.'),
   identifiedGaps: z.string().describe('The identified gaps in the resume content.'),
   isFresher: z.boolean().describe('Whether the resume is for a fresher.'),
-  resumeAnalysis: ResumeAnalysisOutputSchema.describe('Structured analysis of the original resume.'),
 });
 export type OptimizeContentInput = z.infer<typeof OptimizeContentInputSchema>;
 

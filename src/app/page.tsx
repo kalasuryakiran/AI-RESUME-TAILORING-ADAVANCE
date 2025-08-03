@@ -120,11 +120,11 @@ export default function ResumeOptimizerPage() {
   };
 
   const handleOptimize = () => {
-    if (!gapAnalysisResult || !resumeAnalysis) return;
+    if (!gapAnalysisResult) return;
     const gapsString = `Missing Keywords: ${gapAnalysisResult.missingKeywords.join(', ')}\nMissing Skills: ${gapAnalysisResult.missingSkills.join(', ')}\nMissing Action Verbs: ${gapAnalysisResult.missingActionVerbs.join(', ')}`;
     startOptimizationTransition(async () => {
       try {
-        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher, resumeAnalysis);
+        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher);
         setOptimizedResult(result);
       } catch (error) {
         toast({

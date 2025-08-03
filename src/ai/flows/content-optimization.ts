@@ -6,7 +6,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {OptimizeContentInputSchema, OptimizeContentOutputSchema, type OptimizeContentInput, type OptimizeContentOutput} from '@/ai/schemas';
+import {OptimizeContentInputSchema, OptimizeContentOutputSchema, type OptimizeContentInput, type OptimizeContentOutput, ResumeAnalysisOutputSchema} from '@/ai/schemas';
 
 export async function optimizeContent(input: OptimizeContentInput): Promise<OptimizeContentOutput> {
   return optimizeContentFlow(input);
@@ -25,17 +25,15 @@ const optimizeContentPrompt = ai.definePrompt({
 
   Based on the provided resume content, job description, and identified gaps, rewrite and optimize the resume content to achieve a 100% ATS score.
   You MUST aggressively change the content of the resume to fully align with the job description.
-  Rephrase sentences, expand on projects, and add all relevant keywords to maximize the resume's matching to the job description. Use the structured analysis to ensure you don't lose key information from the original resume.
+  Rephrase sentences, expand on projects, and add all relevant keywords to maximize the resume's matching to the job description.
 
   Return two versions of the optimized content:
   1.  'optimizedContent': A single string formatted as a clean, professional resume that a user can copy-paste.
-  2.  'optimizedContentStructured': A JSON object with the same structure as the input 'resumeAnalysis' but with the optimized content. This should include name, contact, summary, skills, experiences, and education.
+  2.  'optimizedContentStructured': A JSON object with the structure defined by the output schema (name, contact, summary, skills, experiences, and education).
 
   Original Resume Content: {{{resumeContent}}}
   Job Description: {{{jobDescription}}}
   Identified Gaps: {{{identifiedGaps}}}
-  Structured Resume Analysis:
-  {{{JSON.stringify resumeAnalysis}}}
 
   Your final output will be a perfectly formatted resume template in both string and structured format. Ensure the optimized content is well-structured, professional, and easy to read for both humans and ATS systems.
   The ATS score should be 100, reflecting a perfect match with the job description.
@@ -49,7 +47,23 @@ const optimizeContentFlow = ai.defineFlow(
     outputSchema: OptimizeContentOutputSchema,
   },
   async input => {
+    // First, analyze the original resume to get a structured version.
+    const resumeAnalysis = await ai.run('resumeAnalysisFlow', { resumeText: input.resumeContent });
+
     const {output} = await optimizeContentPrompt(input);
-    return output!;
+
+    if (!output) {
+      throw new Error('Optimization failed to produce an output.');
+    }
+    
+    // To ensure the output is valid, we can try to parse it against the schema.
+    // This adds a layer of validation.
+    try {
+      const validatedOutput = OptimizeContentOutputSchema.parse(output);
+      return validatedOutput;
+    } catch (e) {
+      console.error("Generated content failed validation:", e);
+      throw new Error("The AI generated an invalid resume structure. Please try again.");
+    }
   }
 );
