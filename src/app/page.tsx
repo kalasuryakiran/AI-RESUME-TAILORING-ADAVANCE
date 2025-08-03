@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useRef } from 'react';
 import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput, ResumeAnalysisOutput } from '@/ai/schemas';
-import { performGapAnalysis, performContentOptimization, getResumeAnalysis } from './actions';
+import { performGapAnalysis, performContentOptimization } from './actions';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
@@ -120,8 +120,7 @@ export default function ResumeOptimizerPage() {
     const gapsString = `Missing Keywords: ${gapAnalysisResult.missingKeywords.join(', ')}\nMissing Skills: ${gapAnalysisResult.missingSkills.join(', ')}\nMissing Action Verbs: ${gapAnalysisResult.missingActionVerbs.join(', ')}`;
     startOptimizationTransition(async () => {
       try {
-        const resumeAnalysis = await getResumeAnalysis(resume);
-        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher, resumeAnalysis);
+        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher);
         setOptimizedResult(result);
       } catch (error) {
         toast({

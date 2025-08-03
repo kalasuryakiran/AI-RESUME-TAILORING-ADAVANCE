@@ -27,13 +27,13 @@ export async function performContentOptimization(
   resumeContent: string,
   jobDescription: string,
   identifiedGaps: string,
-  isFresher: boolean,
-  resumeAnalysis: ResumeAnalysisOutput
+  isFresher: boolean
 ): Promise<OptimizeContentOutput> {
   if (!resumeContent || !jobDescription) {
     throw new Error('Missing required data for optimization.');
   }
    try {
+    const resumeAnalysis = await analyzeResume({ resumeText: resumeContent });
     const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps, isFresher, resumeAnalysis });
     return result;
   } catch(e) {
