@@ -1,22 +1,21 @@
 'use server';
-
 /**
  * @fileOverview This file contains the Genkit flow for analyzing a resume and job description to identify missing keywords, skills, and action verbs.
  *
- * - analyzeResumeAndJobDescription - A function that takes resume and job description as input and returns the analysis.
+ * - analyzeGaps - A function that takes resume and job description as input and returns the analysis.
  */
 
 import {ai} from '@/ai/genkit';
 import {AnalyzeResumeAndJobDescriptionInputSchema, AnalyzeResumeAndJobDescriptionOutputSchema, type AnalyzeResumeAndJobDescriptionInput, type AnalyzeResumeAndJobDescriptionOutput} from '@/ai/schemas';
 
-export async function analyzeResumeAndJobDescription(
+export async function analyzeGaps(
   input: AnalyzeResumeAndJobDescriptionInput
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
-  return analyzeResumeAndJobDescriptionFlow(input);
+  return analyzeGapsFlow(input);
 }
 
-const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
-  name: 'analyzeResumeAndJobDescriptionPrompt',
+const analyzeGapsPrompt = ai.definePrompt({
+  name: 'analyzeGapsPrompt',
   input: {schema: AnalyzeResumeAndJobDescriptionInputSchema},
   output: {schema: AnalyzeResumeAndJobDescriptionOutputSchema},
   prompt: `You are an expert career coach specializing in Applicant Tracking Systems (ATS).
@@ -28,16 +27,14 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
 
   Specifically:
   1. Extract key skills, keywords, and action verbs from the job description.
-  2. Check if these keywords, skills, and action verbs are present in the structured resume data provided.
+  2. Check if these keywords, skills, and action verbs are present in the resume text.
   3. List the keywords, skills, and action verbs that are missing from the resume but are present in the job description.
 
   Job Description:
   {{{jobDescriptionText}}}
 
-  Structured Resume Data:
-  Skills: {{#each resumeAnalysis.skills}}{{this}}, {{/each}}
-  Experience: {{#each resumeAnalysis.experiences}}{{this.title}} at {{this.company}} - {{this.description}}{{/each}}
-  Education: {{#each resumeAnalysis.education}}{{this.degree}} from {{this.school}}{{/each}}
+  Resume:
+  {{{resumeText}}}
 
   Present the output as a JSON object with the following keys:
   - missingKeywords: An array of keywords missing from the resume.
@@ -49,14 +46,14 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
 `,
 });
 
-const analyzeResumeAndJobDescriptionFlow = ai.defineFlow(
+const analyzeGapsFlow = ai.defineFlow(
   {
-    name: 'analyzeResumeAndJobDescriptionFlow',
+    name: 'analyzeGapsFlow',
     inputSchema: AnalyzeResumeAndJobDescriptionInputSchema,
     outputSchema: AnalyzeResumeAndJobDescriptionOutputSchema,
   },
   async input => {
-    const {output} = await analyzeResumeAndJobDescriptionPrompt(input);
+    const {output} = await analyzeGapsPrompt(input);
     return output!;
   }
 );

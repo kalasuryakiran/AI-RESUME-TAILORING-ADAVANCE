@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useTransition, useRef } from 'react';
-import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput, ResumeAnalysisOutput } from '@/ai/schemas';
+import { useState, useTransition } from 'react';
+import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput } from '@/ai/schemas';
 import { performGapAnalysis, performContentOptimization } from './actions';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,9 +15,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Icons } from '@/components/icons';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ModernTemplate } from '@/components/resume-templates/modern';
-import { ClassicTemplate } from '@/components/resume-templates/classic';
 
 import {
   Briefcase,
@@ -30,13 +25,11 @@ import {
   Wand2,
   AlertCircle,
   Telescope,
-  Download
 } from 'lucide-react';
 
 
 type GapAnalysisResult = AnalyzeResumeAndJobDescriptionOutput | null;
 type OptimizedResult = OptimizeContentOutput | null;
-type ResumeAnalysisResult = ResumeAnalysisOutput | null;
 
 const ScoreDonut = ({ score }: { score: number }) => {
   const radius = 54;
@@ -81,16 +74,11 @@ export default function ResumeOptimizerPage() {
   const [jobDesc, setJobDesc] = useState('');
   const [isFresher, setIsFresher] = useState(false);
   const [gapAnalysisResult, setGapAnalysisResult] = useState<GapAnalysisResult>(null);
-  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysisResult>(null);
   const [optimizedResult, setOptimizedResult] = useState<OptimizedResult>(null);
   const [isAnalyzing, startAnalysisTransition] = useTransition();
   const [isOptimizing, startOptimizationTransition] = useTransition();
-  const [isDownloading, setIsDownloading] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('modern');
   const [atsScore, setAtsScore] = useState(100);
   const { toast } = useToast();
-
-  const templateRef = useRef<HTMLDivElement>(null);
 
   const handleAnalyze = () => {
     if (!resume.trim() || !jobDesc.trim()) {
@@ -104,9 +92,8 @@ export default function ResumeOptimizerPage() {
     setOptimizedResult(null);
     startAnalysisTransition(async () => {
       try {
-        const { gapAnalysis, resumeAnalysis } = await performGapAnalysis(resume, jobDesc, isFresher);
+        const gapAnalysis = await performGapAnalysis(resume, jobDesc, isFresher);
         setGapAnalysisResult(gapAnalysis);
-        setResumeAnalysis(resumeAnalysis);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -114,7 +101,6 @@ export default function ResumeOptimizerPage() {
           description: error instanceof Error ? error.message : 'An unknown error occurred.',
         });
         setGapAnalysisResult(null);
-        setResumeAnalysis(null);
       }
     });
   };
@@ -145,44 +131,6 @@ export default function ResumeOptimizerPage() {
     });
   };
 
-  const handleDownload = async () => {
-    if (!templateRef.current || !optimizedResult) return;
-
-    setIsDownloading(true);
-    try {
-      const canvas = await html2canvas(templateRef.current, {
-        scale: 2, 
-        useCORS: true,
-        backgroundColor: '#ffffff'
-      });
-      const imgData = canvas.toDataURL('image/png');
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'px',
-        format: [canvas.width, canvas.height]
-      });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-      pdf.save('optimized-resume.pdf');
-      
-      toast({
-        title: 'Download Started',
-        description: 'Your optimized resume is being downloaded.',
-      });
-
-    } catch (error) {
-       toast({
-        variant: 'destructive',
-        title: 'Download Failed',
-        description: 'Could not generate PDF. Please try again.',
-      });
-      console.error(error)
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-  
   const renderGapAnalysis = (title: string, items: string[]) => (
     items.length > 0 && (
       <div>
@@ -198,20 +146,8 @@ export default function ResumeOptimizerPage() {
     )
   );
 
-  const ResumeTemplate = ({ data }: { data: ResumeAnalysisOutput }) => {
-    const Template = selectedTemplate === 'classic' ? ClassicTemplate : ModernTemplate;
-    return <Template ref={templateRef} data={data} />;
-  }
-
   return (
     <>
-      {/* Hidden container for rendering the template for PDF generation */}
-      {optimizedResult && (
-        <div className="absolute left-[-9999px] top-[-9999px] w-[800px] bg-white text-black" >
-           <ResumeTemplate data={optimizedResult.optimizedContentStructured} />
-        </div>
-      )}
-
       <div className="min-h-screen bg-background text-foreground">
         <header className="container mx-auto py-8 text-center">
           <div className="flex justify-center items-center gap-4 mb-2">
@@ -349,23 +285,6 @@ export default function ResumeOptimizerPage() {
                               <ClipboardCopy className="mr-2 h-4 w-4" />
                               Copy Resume Text
                             </Button>
-                             <Button onClick={handleDownload} disabled={isDownloading}>
-                               {isDownloading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Download className="mr-2 h-4 w-4" />}
-                               Download PDF
-                            </Button>
-                          </div>
-
-                           <div className="w-full max-w-sm mx-auto">
-                              <Label htmlFor="template-select">Resume Template</Label>
-                              <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                                <SelectTrigger id="template-select" className="w-full">
-                                  <SelectValue placeholder="Select a template" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="modern">Modern</SelectItem>
-                                  <SelectItem value="classic">Classic</SelectItem>
-                                </SelectContent>
-                              </Select>
                           </div>
                       </div>
                       <div className="mt-6 p-6 border rounded-lg bg-white dark:bg-card h-[400px] overflow-y-auto">

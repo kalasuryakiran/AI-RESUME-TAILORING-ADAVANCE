@@ -6,7 +6,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {OptimizeContentInputSchema, OptimizeContentOutputSchema, type OptimizeContentInput, type OptimizeContentOutput, ResumeAnalysisOutputSchema} from '@/ai/schemas';
+import {OptimizeContentInputSchema, OptimizeContentOutputSchema, type OptimizeContentInput, type OptimizeContentOutput} from '@/ai/schemas';
 
 export async function optimizeContent(input: OptimizeContentInput): Promise<OptimizeContentOutput> {
   return optimizeContentFlow(input);
@@ -47,23 +47,10 @@ const optimizeContentFlow = ai.defineFlow(
     outputSchema: OptimizeContentOutputSchema,
   },
   async input => {
-    // First, analyze the original resume to get a structured version.
-    const resumeAnalysis = await ai.run('resumeAnalysisFlow', { resumeText: input.resumeContent });
-
     const {output} = await optimizeContentPrompt(input);
-
     if (!output) {
       throw new Error('Optimization failed to produce an output.');
     }
-    
-    // To ensure the output is valid, we can try to parse it against the schema.
-    // This adds a layer of validation.
-    try {
-      const validatedOutput = OptimizeContentOutputSchema.parse(output);
-      return validatedOutput;
-    } catch (e) {
-      console.error("Generated content failed validation:", e);
-      throw new Error("The AI generated an invalid resume structure. Please try again.");
-    }
+    return output;
   }
 );
