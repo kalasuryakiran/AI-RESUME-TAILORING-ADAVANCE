@@ -54,3 +54,14 @@ export const OptimizeContentOutputSchema = z.object({
   optimizedContentStructured: ResumeAnalysisOutputSchema.describe('The optimized resume content in a structured format.'),
 });
 export type OptimizeContentOutput = z.infer<typeof OptimizeContentOutputSchema>;
+
+export const AtsScoreInputSchema = z.object({
+  resumeText: z.string().describe('The raw text content of the resume.'),
+  jobDescriptionText: z.string().describe('The text content of the job description.'),
+});
+export type AtsScoreInput = z.infer<typeof AtsScoreInputSchema>;
+
+export const AtsScoreOutputSchema = z.object({
+  score: z.number().describe('The ATS score of the resume, from 0 to 100.'),
+});
+export type AtsScoreOutput = z.infer<typeof AtsScoreOutputSchema>;

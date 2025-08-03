@@ -2,7 +2,8 @@
 
 import { analyzeGaps } from '@/ai/flows/gap-analysis';
 import { optimizeContent } from '@/ai/flows/content-optimization';
-import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput } from '@/ai/schemas';
+import { calculateScore } from '@/ai/flows/score-calculator';
+import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput, AtsScoreOutput } from '@/ai/schemas';
 
 export async function performGapAnalysis(
   resumeText: string,
@@ -36,5 +37,21 @@ export async function performContentOptimization(
   } catch(e) {
     console.error(e);
     throw new Error("Failed to optimize resume. The AI model might be unavailable.");
+  }
+}
+
+export async function calculateAtsScore(
+  resumeText: string,
+  jobDescriptionText: string,
+): Promise<AtsScoreOutput> {
+  if (!resumeText || !jobDescriptionText) {
+    throw new Error('Resume and Job Description cannot be empty for scoring.');
+  }
+  try {
+    const result = await calculateScore({ resumeText, jobDescriptionText });
+    return result;
+  } catch(e) {
+    console.error(e);
+    throw new Error("Failed to calculate score. The AI model might be unavailable.");
   }
 }

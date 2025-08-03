@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import type { AnalyzeResumeAndJobDescriptionOutput, OptimizeContentOutput } from '@/ai/schemas';
-import { performGapAnalysis, performContentOptimization } from './actions';
+import { performGapAnalysis, performContentOptimization, calculateAtsScore } from './actions';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -25,13 +25,15 @@ import {
   Wand2,
   AlertCircle,
   Telescope,
+  TrendingUp,
+  ArrowRight,
 } from 'lucide-react';
 
 
 type GapAnalysisResult = AnalyzeResumeAndJobDescriptionOutput | null;
 type OptimizedResult = OptimizeContentOutput | null;
 
-const ScoreDonut = ({ score }: { score: number }) => {
+const ScoreDonut = ({ score, title = 'ATS Score' }: { score: number; title?: string }) => {
   const radius = 54;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (score / 100) * circumference;
@@ -62,7 +64,7 @@ const ScoreDonut = ({ score }: { score: number }) => {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="text-4xl font-bold text-accent">{score}</span>
-        <span className="text-sm font-medium text-muted-foreground">ATS Score</span>
+        <span className="text-sm font-medium text-muted-foreground">{title}</span>
       </div>
     </div>
   );
@@ -77,7 +79,8 @@ export default function ResumeOptimizerPage() {
   const [optimizedResult, setOptimizedResult] = useState<OptimizedResult>(null);
   const [isAnalyzing, startAnalysisTransition] = useTransition();
   const [isOptimizing, startOptimizationTransition] = useTransition();
-  const [atsScore, setAtsScore] = useState(100);
+  const [originalAtsScore, setOriginalAtsScore] = useState<number | null>(null);
+  const [optimizedAtsScore, setOptimizedAtsScore] = useState<number | null>(null);
   const { toast } = useToast();
 
   const handleAnalyze = () => {
@@ -90,10 +93,18 @@ export default function ResumeOptimizerPage() {
       return;
     }
     setOptimizedResult(null);
+    setGapAnalysisResult(null);
+    setOriginalAtsScore(null);
+    setOptimizedAtsScore(null);
+
     startAnalysisTransition(async () => {
       try {
-        const gapAnalysis = await performGapAnalysis(resume, jobDesc, isFresher);
+        const [gapAnalysis, scoreResult] = await Promise.all([
+          performGapAnalysis(resume, jobDesc, isFresher),
+          calculateAtsScore(resume, jobDesc)
+        ]);
         setGapAnalysisResult(gapAnalysis);
+        setOriginalAtsScore(scoreResult.score);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -101,6 +112,7 @@ export default function ResumeOptimizerPage() {
           description: error instanceof Error ? error.message : 'An unknown error occurred.',
         });
         setGapAnalysisResult(null);
+        setOriginalAtsScore(null);
       }
     });
   };
@@ -112,6 +124,9 @@ export default function ResumeOptimizerPage() {
       try {
         const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher);
         setOptimizedResult(result);
+        
+        const newScoreResult = await calculateAtsScore(result.optimizedContent, jobDesc);
+        setOptimizedAtsScore(newScoreResult.score);
       } catch (error) {
         toast({
           variant: 'destructive',
@@ -119,6 +134,7 @@ export default function ResumeOptimizerPage() {
           description: error instanceof Error ? error.message : 'An unknown error occurred.',
         });
         setOptimizedResult(null);
+        setOptimizedAtsScore(null);
       }
     });
   };
@@ -212,7 +228,7 @@ export default function ResumeOptimizerPage() {
                   ) : (
                     <Telescope className="mr-2 h-4 w-4" />
                   )}
-                  Analyze Gaps
+                  Analyze Gaps & Score
                 </Button>
                 
                 {isAnalyzing && (
@@ -220,7 +236,7 @@ export default function ResumeOptimizerPage() {
                       <AlertCircle className="h-4 w-4"/>
                       <AlertTitle>AI is thinking...</AlertTitle>
                       <AlertDescription>
-                        Our AI is analyzing your resume against the job description. This may take a moment.
+                        Our AI is analyzing your resume and calculating your initial score. This may take a moment.
                       </AlertDescription>
                     </Alert>
                 )}
@@ -229,7 +245,9 @@ export default function ResumeOptimizerPage() {
                   <Card className="bg-secondary/50">
                     <CardHeader>
                       <CardTitle className="text-xl">Analysis Complete</CardTitle>
-                      <CardDescription>Here are the keywords and skills you might be missing.</CardDescription>
+                      {originalAtsScore !== null && (
+                        <CardDescription>Your original resume scored <span className="font-bold text-accent">{originalAtsScore}</span>. Here is what you can improve:</CardDescription>
+                      )}
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {renderGapAnalysis('Missing Keywords', gapAnalysisResult.missingKeywords)}
@@ -255,7 +273,7 @@ export default function ResumeOptimizerPage() {
               <CardHeader>
                 <CardTitle className="text-2xl">Your Optimized Resume</CardTitle>
                   <CardDescription>
-                    View your new resume, check the ATS score, and compare it with the original.
+                    View your new resume, check the improved ATS score, and compare it with the original.
                   </CardDescription>
               </CardHeader>
               <CardContent className="min-h-[600px]">
@@ -279,7 +297,11 @@ export default function ResumeOptimizerPage() {
                     </TabsList>
                     <TabsContent value="optimized" className="mt-4">
                       <div className="flex flex-col items-center gap-6 text-center">
-                          <ScoreDonut score={atsScore} />
+                          <div className="flex items-center justify-center gap-4">
+                            {originalAtsScore !== null && <ScoreDonut score={originalAtsScore} title="Original Score"/>}
+                            {originalAtsScore !== null && optimizedAtsScore !== null && <div className="flex flex-col items-center"><TrendingUp className="h-8 w-8 text-accent"/><ArrowRight className="h-8 w-8 text-muted-foreground"/></div>}
+                            {optimizedAtsScore !== null && <ScoreDonut score={optimizedAtsScore} title="Optimized Score"/>}
+                          </div>
                           <div className="flex flex-wrap justify-center gap-4">
                              <Button onClick={() => handleCopy(optimizedResult.optimizedContent)}>
                               <ClipboardCopy className="mr-2 h-4 w-4" />
