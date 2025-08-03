@@ -27,15 +27,22 @@ const optimizeContentPrompt = ai.definePrompt({
   You MUST aggressively change the content of the resume to fully align with the job description.
   Rephrase sentences, expand on projects, and add all relevant keywords to maximize the resume's matching to the job description. Use the structured analysis to ensure you don't lose key information from the original resume.
 
+  Return two versions of the optimized content:
+  1.  'optimizedContent': A single string formatted as a clean, professional resume that a user can copy-paste.
+  2.  'optimizedContentStructured': A JSON object with the same structure as the input 'resumeAnalysis' but with the optimized content. This should include name, contact, summary, skills, experiences, and education.
+
   Original Resume Content: {{{resumeContent}}}
   Job Description: {{{jobDescription}}}
   Identified Gaps: {{{identifiedGaps}}}
   Structured Resume Analysis:
+  - Name: {{resumeAnalysis.name}}
+  - Contact: {{JSON.stringify resumeAnalysis.contact}}
+  - Summary: {{resumeAnalysis.summary}}
   - Skills: {{#each resumeAnalysis.skills}}{{this}}, {{/each}}
   - Experience: {{#each resumeAnalysis.experiences}}{{this.title}} at {{this.company}} - {{this.description}}{{/each}}
   - Education: {{#each resumeAnalysis.education}}{{this.degree}} from {{this.school}}{{/each}}
 
-  Your final output will be a perfectly formatted resume template. Ensure the optimized content is well-structured, professional, and easy to read for both humans and ATS systems.
+  Your final output will be a perfectly formatted resume template in both string and structured format. Ensure the optimized content is well-structured, professional, and easy to read for both humans and ATS systems.
   The ATS score should be 100, reflecting a perfect match with the job description.
   `,
 });

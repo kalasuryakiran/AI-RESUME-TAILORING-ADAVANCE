@@ -23,6 +23,9 @@ const resumeAnalysisPrompt = ai.definePrompt({
   {{{resumeText}}}
 
   Extract the following information and provide it in a structured JSON format:
+  - name: The full name of the person.
+  - contact: An object containing email, phone, linkedin, github, and website URLs if available.
+  - summary: A professional summary or objective statement.
   - skills: A list of all skills mentioned.
   - experiences: A list of all work or project experiences, including title, company/context, and a description.
   - education: A list of all educational entries, including degree, school, and year.

@@ -13,6 +13,15 @@ const EducationSchema = z.object({
 });
 
 export const ResumeAnalysisOutputSchema = z.object({
+  name: z.string().describe('Full name.'),
+  contact: z.object({
+    email: z.string().optional().describe('Email address.'),
+    phone: z.string().optional().describe('Phone number.'),
+    linkedin: z.string().optional().describe('LinkedIn profile URL.'),
+    github: z.string().optional().describe('GitHub profile URL.'),
+    website: z.string().optional().describe('Personal website or portfolio URL.'),
+  }).describe('Contact information.'),
+  summary: z.string().describe('A brief professional summary.'),
   skills: z.array(z.string()).describe('A list of skills extracted from the resume.'),
   experiences: z.array(ExperienceSchema).describe('A list of professional experiences.'),
   education: z.array(EducationSchema).describe('A list of educational qualifications.'),
@@ -48,7 +57,8 @@ export const OptimizeContentInputSchema = z.object({
 export type OptimizeContentInput = z.infer<typeof OptimizeContentInputSchema>;
 
 export const OptimizeContentOutputSchema = z.object({
-  optimizedContent: z.string().describe('The optimized resume content.'),
+  optimizedContent: z.string().describe('The optimized resume content as a single string.'),
+  optimizedContentStructured: ResumeAnalysisOutputSchema.describe('The optimized resume content in a structured format.'),
   atsScore: z.number().describe('The estimated ATS score for the optimized resume.'),
 });
 export type OptimizeContentOutput = z.infer<typeof OptimizeContentOutputSchema>;
