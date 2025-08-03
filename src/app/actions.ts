@@ -5,13 +5,14 @@ import { optimizeContent, OptimizeContentOutput } from '@/ai/flows/content-optim
 
 export async function performGapAnalysis(
   resumeText: string,
-  jobDescriptionText: string
+  jobDescriptionText: string,
+  isFresher: boolean
 ): Promise<AnalyzeResumeAndJobDescriptionOutput> {
   if (!resumeText || !jobDescriptionText) {
     throw new Error('Resume and Job Description cannot be empty.');
   }
   try {
-    const result = await analyzeResumeAndJobDescription({ resumeText, jobDescriptionText });
+    const result = await analyzeResumeAndJobDescription({ resumeText, jobDescriptionText, isFresher });
     return result;
   } catch(e) {
     console.error(e);
@@ -22,13 +23,14 @@ export async function performGapAnalysis(
 export async function performContentOptimization(
   resumeContent: string,
   jobDescription: string,
-  identifiedGaps: string
+  identifiedGaps: string,
+  isFresher: boolean
 ): Promise<OptimizeContentOutput> {
   if (!resumeContent || !jobDescription) {
     throw new Error('Missing required data for optimization.');
   }
    try {
-    const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps });
+    const result = await optimizeContent({ resumeContent, jobDescription, identifiedGaps, isFresher });
     return result;
   } catch(e) {
     console.error(e);

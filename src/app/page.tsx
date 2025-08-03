@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Icons } from '@/components/icons';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
   Briefcase,
   ClipboardCopy,
@@ -69,6 +71,7 @@ const ScoreDonut = ({ score }: { score: number }) => {
 export default function ResumeOptimizerPage() {
   const [resume, setResume] = useState('');
   const [jobDesc, setJobDesc] = useState('');
+  const [isFresher, setIsFresher] = useState(false);
   const [gapAnalysisResult, setGapAnalysisResult] = useState<GapAnalysisResult>(null);
   const [optimizedResult, setOptimizedResult] = useState<OptimizedResult>(null);
   const [isAnalyzing, startAnalysisTransition] = useTransition();
@@ -87,7 +90,7 @@ export default function ResumeOptimizerPage() {
     setOptimizedResult(null);
     startAnalysisTransition(async () => {
       try {
-        const result = await performGapAnalysis(resume, jobDesc);
+        const result = await performGapAnalysis(resume, jobDesc, isFresher);
         setGapAnalysisResult(result);
       } catch (error) {
         toast({
@@ -105,7 +108,7 @@ export default function ResumeOptimizerPage() {
     const gapsString = `Missing Keywords: ${gapAnalysisResult.missingKeywords.join(', ')}\nMissing Skills: ${gapAnalysisResult.missingSkills.join(', ')}\nMissing Action Verbs: ${gapAnalysisResult.missingActionVerbs.join(', ')}`;
     startOptimizationTransition(async () => {
       try {
-        const result = await performContentOptimization(resume, jobDesc, gapsString);
+        const result = await performContentOptimization(resume, jobDesc, gapsString, isFresher);
         setOptimizedResult(result);
       } catch (error) {
         toast({
@@ -191,6 +194,12 @@ export default function ResumeOptimizerPage() {
                   onChange={(e) => setJobDesc(e.target.value)}
                   className="min-h-[200px] text-base"
                 />
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox id="isFresher" checked={isFresher} onCheckedChange={(checked) => setIsFresher(!!checked)} />
+                <Label htmlFor="isFresher" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  I am a Fresher
+                </Label>
               </div>
             </CardContent>
             <CardFooter className="flex-col items-stretch gap-4">

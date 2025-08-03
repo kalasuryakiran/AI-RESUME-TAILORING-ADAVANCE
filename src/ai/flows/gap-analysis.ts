@@ -14,6 +14,7 @@ import {z} from 'genkit';
 const AnalyzeResumeAndJobDescriptionInputSchema = z.object({
   resumeText: z.string().describe('The text content of the resume.'),
   jobDescriptionText: z.string().describe('The text content of the job description.'),
+  isFresher: z.boolean().describe('Whether the resume is for a fresher.'),
 });
 
 export type AnalyzeResumeAndJobDescriptionInput = z.infer<typeof AnalyzeResumeAndJobDescriptionInputSchema>;
@@ -37,6 +38,9 @@ const analyzeResumeAndJobDescriptionPrompt = ai.definePrompt({
   input: {schema: AnalyzeResumeAndJobDescriptionInputSchema},
   output: {schema: AnalyzeResumeAndJobDescriptionOutputSchema},
   prompt: `You are an expert career coach specializing in Applicant Tracking Systems (ATS).
+  {{#if isFresher}}
+  You are analyzing a resume for a fresher. Focus on identifying missing skills, relevant coursework, project experience, and internships that align with the job description. Acknowledge that extensive work history may be absent.
+  {{/if}}
 
   Your task is to analyze a resume against a job description and identify gaps in keywords, skills, and action verbs.
 

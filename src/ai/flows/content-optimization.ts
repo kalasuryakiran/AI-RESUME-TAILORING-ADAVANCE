@@ -14,6 +14,7 @@ const OptimizeContentInputSchema = z.object({
   resumeContent: z.string().describe('The content of the resume to be optimized.'),
   jobDescription: z.string().describe('The job description to match the resume to.'),
   identifiedGaps: z.string().describe('The identified gaps in the resume content.'),
+  isFresher: z.boolean().describe('Whether the resume is for a fresher.'),
 });
 export type OptimizeContentInput = z.infer<typeof OptimizeContentInputSchema>;
 
@@ -32,6 +33,9 @@ const optimizeContentPrompt = ai.definePrompt({
   input: {schema: OptimizeContentInputSchema},
   output: {schema: OptimizeContentOutputSchema},
   prompt: `You are an expert resume writer specializing in ATS optimization.
+  {{#if isFresher}}
+  You are creating a resume for a fresher. Focus on highlighting potential, transferable skills, academic projects, and internships. De-emphasize the lack of professional experience. The resume should be tailored for an entry-level position.
+  {{/if}}
 
   Based on the provided resume content, job description, and identified gaps, rewrite and optimize the resume content to achieve a higher ATS score.
   Rephrase sentences and add industry-relevant keywords to improve the resume's matching to the job description.
