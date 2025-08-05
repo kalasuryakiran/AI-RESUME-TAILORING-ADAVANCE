@@ -77,13 +77,15 @@ cd AI-RESUME-TAILORING-ADAVANCE
 
 # 3. Install the dependencies:
 npm install
+```
 🔧 Usage
 Run the project with:
 
-bash
+```bash
 Copy
 Edit
 npm start
+```
 Visit: http://localhost:3000
 
 🧪 Testing
@@ -91,10 +93,11 @@ AI-RESUME-TAILORING-ADVANCE uses {test_framework} for testing.
 
 Run the test suite with:
 
-bash
+```bash
 Copy
 Edit
 npm test
+```
 Replace {test_framework} with the actual framework name (e.g., Jest, Vitest).
 
 🙌 Contributing
